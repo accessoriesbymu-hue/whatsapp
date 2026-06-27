@@ -1,0 +1,2862 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Bulk Sender Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ── Design Tokens ──────────────────────────────────────────────────── */
+        :root {
+            --bg-base: #080D17;
+            --bg-surface: #0F1623;
+            --bg-card: #131D2E;
+            --bg-input: #1A2540;
+            --bg-hover: #1E2D47;
+            --border: rgba(255, 255, 255, 0.07);
+            --border-active: rgba(37, 211, 102, 0.5);
+
+            --green: #25D366;
+            --green-dark: #128C7E;
+            --green-dim: rgba(37, 211, 102, 0.12);
+            --green-glow: rgba(37, 211, 102, 0.25);
+
+            --blue: #3B82F6;
+            --blue-dim: rgba(59, 130, 246, 0.12);
+
+            --red: #EF4444;
+            --red-dim: rgba(239, 68, 68, 0.12);
+
+            --amber: #F59E0B;
+            --amber-dim: rgba(245, 158, 11, 0.12);
+
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: var(--bg-base);
+            min-height: 100vh;
+            padding: 24px 16px;
+            color: var(--text-primary);
+            background-image:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(37, 211, 102, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+        }
+
+        /* ── Layout ─────────────────────────────────────────────────────────── */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1.2fr 1fr;
+            }
+        }
+
+        /* ── Header ─────────────────────────────────────────────────────────── */
+        .header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+        }
+
+        .header-info {
+            color: white;
+            text-align: center;
+            flex: 1;
+        }
+
+        .header-info h1 {
+            font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff 0%, var(--green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 6px;
+        }
+
+        .header-info p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .user-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+            min-width: 120px;
+        }
+
+        .user-badge span {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .logout-btn:hover {
+            background: var(--red-dim);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: var(--red);
+        }
+
+        /* ── Card ───────────────────────────────────────────────────────────── */
+        .card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 28px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.2px;
+        }
+
+        .card h2 i {
+            color: var(--green);
+            font-size: 1.2rem;
+        }
+
+        /* ── Step Tabs ──────────────────────────────────────────────────────── */
+        .step-indicator {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 28px;
+            background: var(--bg-surface);
+            padding: 5px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+        }
+
+        .step {
+            flex: 1;
+            padding: 11px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid transparent;
+            font-size: 0.85rem;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        .step.active {
+            background: var(--green-dim);
+            color: var(--green);
+            border-color: rgba(37, 211, 102, 0.2);
+            font-weight: 700;
+        }
+
+        .step:not(.active):hover {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-secondary);
+        }
+
+        /* ── Step Content ───────────────────────────────────────────────────── */
+        .step-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Form Elements ──────────────────────────────────────────────────── */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group label i {
+            color: var(--green);
+            margin-right: 4px;
+        }
+
+        .form-group input[type="text"],
+        .form-group textarea,
+        .form-group input[type="number"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            background: var(--bg-input);
+            color: var(--text-primary);
+        }
+
+        .form-group textarea {
+            min-height: 160px;
+            resize: vertical;
+        }
+
+        .form-group input[type="number"] {
+            width: 100%;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px var(--green-glow);
+            background: var(--bg-hover);
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-error {
+            color: var(--red);
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            display: none;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-error.show {
+            display: flex;
+        }
+
+        /* ── Buttons ────────────────────────────────────────────────────────── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 13px 28px;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            letter-spacing: 0.2px;
+        }
+
+        .btn-primary {
+            background: var(--green);
+            color: #000;
+            border-color: var(--green);
+            box-shadow: 0 4px 20px var(--green-glow);
+        }
+
+        .btn-primary:hover {
+            background: #1db954;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(37, 211, 102, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--blue);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(59, 130, 246, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--red);
+            border-color: rgba(239, 68, 68, 0.25);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.22);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        /* ── Upload Area ────────────────────────────────────────────────────── */
+        .upload-area {
+            border: 2px dashed rgba(37, 211, 102, 0.25);
+            border-radius: 16px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: rgba(37, 211, 102, 0.04);
+        }
+
+        .upload-area:hover {
+            border-color: var(--green);
+            background: var(--green-dim);
+            transform: translateY(-2px);
+        }
+
+        .upload-area i {
+            font-size: 2.5rem;
+            color: var(--green);
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .upload-area p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .upload-area strong {
+            color: var(--text-primary);
+        }
+
+        .upload-area input {
+            display: none;
+        }
+
+        /* ── Contact List ───────────────────────────────────────────────────── */
+        .contact-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: var(--bg-surface);
+            border-radius: 12px;
+            margin-top: 12px;
+            padding: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .contact-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            margin-bottom: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .contact-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .contact-info {
+            flex: 1;
+        }
+
+        .contact-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .contact-phone {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            margin-top: 2px;
+        }
+
+        .contact-remove {
+            background: var(--red-dim);
+            color: var(--red);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .contact-remove:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+
+        /* ── Excel Template ─────────────────────────────────────────────────── */
+        .excel-template {
+            background: rgba(245, 158, 11, 0.06);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 14px;
+            padding: 18px;
+            margin-top: 18px;
+        }
+
+        .excel-template h3 {
+            color: var(--amber);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+
+        .excel-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+
+        .excel-table th,
+        .excel-table td {
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            padding: 10px 12px;
+            text-align: left;
+            font-size: 0.88rem;
+        }
+
+        .excel-table th {
+            background: rgba(245, 158, 11, 0.08);
+            font-weight: 700;
+            color: var(--amber);
+        }
+
+        .excel-table td {
+            color: var(--text-secondary);
+        }
+
+        .excel-tips {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            line-height: 1.7;
+        }
+
+        .excel-tips strong {
+            color: var(--amber);
+        }
+
+        .excel-tips code {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--amber);
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 0.82rem;
+        }
+
+        /* ── WhatsApp Preview ───────────────────────────────────────────────── */
+        .preview-container {
+            background: #E5DDD5;
+            border-radius: 16px;
+            padding: 0;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .preview-header {
+            background: linear-gradient(135deg, #075E54 0%, #128C7E 100%);
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .preview-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        .preview-user-info h3 {
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .preview-user-info p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+        }
+
+        .preview-body {
+            padding: 16px;
+            min-height: 120px;
+        }
+
+        .preview-content {
+            background: white;
+            border-radius: 0 12px 12px 12px;
+            padding: 12px 14px;
+            position: relative;
+            margin-left: 6px;
+            max-width: 85%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+        }
+
+        .preview-content::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 0;
+            border-width: 8px;
+            border-style: solid;
+            border-color: white transparent transparent transparent;
+        }
+
+        .preview-media {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .preview-text {
+            line-height: 1.55;
+            color: #111;
+            font-size: 0.9rem;
+            word-wrap: break-word;
+        }
+
+        .preview-footer {
+            text-align: right;
+            font-size: 0.75rem;
+            color: #667781;
+            margin-top: 6px;
+        }
+
+        /* ── Status Messages ────────────────────────────────────────────────── */
+        .status-message {
+            padding: 13px 16px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .status-success {
+            background: var(--green-dim);
+            color: var(--green);
+            border: 1px solid rgba(37, 211, 102, 0.2);
+        }
+
+        .status-info {
+            background: var(--blue-dim);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .status-error {
+            background: var(--red-dim);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        /* ── QR Code ────────────────────────────────────────────────────────── */
+        .qr-container {
+            text-align: center;
+            padding: 24px;
+            background: var(--bg-surface);
+            border-radius: 14px;
+            border: 1px solid var(--border);
+        }
+
+        .qr-container img {
+            max-width: 260px;
+            width: 100%;
+            border-radius: 12px;
+            border: 3px solid var(--green);
+            box-shadow: 0 0 30px var(--green-glow);
+        }
+
+        .qr-container p {
+            margin-top: 14px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* ── Send Logs ──────────────────────────────────────────────────────── */
+        .logs-container {
+            background: #060B14;
+            border-radius: 12px;
+            padding: 16px;
+            max-height: 280px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            margin-top: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .log-item {
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .log-item:last-child {
+            border-bottom: none;
+        }
+
+        .log-success {
+            color: var(--green);
+        }
+
+        .log-error {
+            color: #f87171;
+        }
+
+        .log-info {
+            color: #60a5fa;
+        }
+
+        /* ── Media Preview ──────────────────────────────────────────────────── */
+        .media-preview {
+            margin-top: 12px;
+            padding: 14px;
+            background: var(--bg-surface);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .media-preview img,
+        .media-preview video,
+        .media-preview audio {
+            max-width: 160px;
+            max-height: 120px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .media-remove {
+            background: var(--red-dim);
+            color: var(--red);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 7px 13px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .media-remove:hover {
+            background: rgba(239, 68, 68, 0.22);
+        }
+
+        /* ── Message Spinner ────────────────────────────────────────────────── */
+        .spinner-label-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .spinner-badge {
+            background: linear-gradient(135deg, rgba(37,211,102,0.2), rgba(59,130,246,0.15));
+            border: 1px solid rgba(37,211,102,0.35);
+            color: var(--green);
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+
+        .variant-tabs {
+            display: flex;
+            gap: 5px;
+            background: var(--bg-surface);
+            padding: 4px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            margin-bottom: 10px;
+        }
+
+        .variant-tab {
+            flex: 1;
+            padding: 8px 10px;
+            border-radius: 7px;
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: inherit;
+            text-align: center;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .variant-tab.active {
+            background: var(--green-dim);
+            color: var(--green);
+            border-color: rgba(37,211,102,0.25);
+        }
+
+        .variant-tab .dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            margin-left: 5px;
+            vertical-align: middle;
+            transition: background 0.2s;
+        }
+
+        .variant-tab.filled .dot {
+            background: var(--green);
+        }
+
+        .variant-panel {
+            display: none;
+        }
+
+        .variant-panel.active {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .spinner-hint {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            background: rgba(37,211,102,0.06);
+            border: 1px solid rgba(37,211,102,0.15);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-top: 10px;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .spinner-hint i {
+            color: var(--green);
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        /* ── Media Mode Toggle ──────────────────────────────────────────────── */
+        .media-mode-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 11px 16px;
+            background: var(--bg-surface);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            margin-top: 10px;
+            margin-bottom: 12px;
+        }
+        .media-mode-row .mode-info span {
+            display: block;
+            font-weight: 600;
+            font-size: 0.87rem;
+            color: var(--text-primary);
+        }
+        .media-mode-row .mode-info small {
+            color: var(--text-muted);
+            font-size: 0.77rem;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: var(--bg-hover);
+            border-radius: 24px;
+            transition: 0.25s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            transition: 0.25s;
+        }
+        .toggle-switch input:checked + .toggle-slider {
+            background: var(--green-dim);
+            border-color: rgba(37,211,102,0.4);
+        }
+        .toggle-switch input:checked + .toggle-slider::before {
+            background: var(--green);
+            transform: translateX(20px);
+        }
+
+        /* ── Variant Media Zone ──────────────────────────────────────────────── */
+        .variant-media-zone { margin-top: 10px; display: none; }
+        .variant-media-zone.visible { display: block; animation: fadeIn 0.2s ease; }
+        .variant-media-upload {
+            border: 1px dashed rgba(37,211,102,0.3);
+            border-radius: 10px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            background: rgba(37,211,102,0.03);
+            transition: all 0.2s ease;
+        }
+        .variant-media-upload:hover {
+            border-color: var(--green);
+            background: var(--green-dim);
+        }
+        .variant-media-upload > i { color: var(--green); font-size: 1rem; }
+        .variant-media-upload > span { color: var(--text-secondary); font-size: 0.83rem; font-weight: 500; }
+        .variant-media-thumb {
+            margin-top: 7px;
+            padding: 8px 12px;
+            background: var(--bg-surface);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid var(--border);
+        }
+        .variant-media-thumb img,
+        .variant-media-thumb video {
+            width: 54px; height: 40px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        .variant-media-thumb .thumb-name {
+            flex: 1;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .thumb-remove {
+            background: var(--red-dim);
+            color: var(--red);
+            border: 1px solid rgba(239,68,68,0.2);
+            padding: 4px 9px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .thumb-remove:hover { background: rgba(239,68,68,0.25); }
+
+        /* ── Preview Stack ───────────────────────────────────────────────────── */
+        .preview-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            max-height: 72vh;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+        .preview-variant-item {
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .preview-variant-label-bar {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 14px;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .preview-variant-item .preview-container {
+            border-radius: 0;
+            box-shadow: none;
+            overflow: visible;
+        }
+        .preview-variant-item .preview-header {
+            padding: 10px 14px;
+        }
+        .preview-variant-item .preview-avatar {
+            width: 34px;
+            height: 34px;
+            font-size: 0.9rem;
+        }
+        .preview-variant-item .preview-user-info h3 {
+            font-size: 0.85rem;
+        }
+        .preview-variant-item .preview-user-info p {
+            font-size: 0.72rem;
+        }
+        .preview-variant-item .preview-body {
+            padding: 14px;
+            min-height: 80px;
+        }
+        .preview-variant-item .preview-content {
+            max-width: 90%;
+            padding: 10px 12px;
+            border-radius: 0 10px 10px 10px;
+        }
+        .preview-variant-item .preview-media {
+            max-width: 100%;
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .preview-variant-item audio.preview-media,
+        .preview-variant-item video.preview-media {
+            width: 100%;
+            max-height: 60px;
+        }
+        .preview-variant-item .preview-text {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #111;
+            word-break: break-word;
+        }
+        .preview-variant-item .preview-footer {
+            font-size: 0.7rem;
+            margin-top: 5px;
+        }
+
+        /* ── Scrollbar ──────────────────────────────────────────────────────── */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* ── Responsive ─────────────────────────────────────────────────────── */
+        @media (max-width: 768px) {
+            .card {
+                padding: 18px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .step {
+                font-size: 0.78rem;
+                padding: 9px 10px;
+            }
+        }
+
+        /* ── Auth Overlay ───────────────────────────────────────────────────── */
+        #authOverlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-base);
+            background-image:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(37, 211, 102, 0.1) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 90% 90%, rgba(59, 130, 246, 0.06) 0%, transparent 50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        #authOverlay.hidden {
+            display: none;
+        }
+
+        .auth-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 40px 36px;
+            width: 100%;
+            max-width: 420px;
+            border: 1px solid var(--border);
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+            animation: fadeIn 0.4s ease;
+        }
+
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .auth-logo i {
+            font-size: 3rem;
+            color: var(--green);
+            filter: drop-shadow(0 0 20px var(--green-glow));
+        }
+
+        .auth-logo h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-top: 10px;
+            letter-spacing: -0.3px;
+        }
+
+        .auth-logo p {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            margin-top: 4px;
+        }
+
+        .auth-tabs {
+            display: flex;
+            background: var(--bg-surface);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 24px;
+            gap: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 11px;
+            border: none;
+            border-radius: 9px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: inherit;
+        }
+
+        .auth-tab.active {
+            background: var(--green);
+            color: #000;
+            box-shadow: 0 4px 12px var(--green-glow);
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .auth-field {
+            margin-bottom: 16px;
+        }
+
+        .auth-field label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            margin-bottom: 7px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .auth-field input {
+            width: 100%;
+            padding: 13px 16px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .auth-field input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .auth-field input:focus {
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px var(--green-glow);
+            background: var(--bg-hover);
+        }
+
+        .auth-field input.error-input {
+            border-color: var(--red);
+            box-shadow: 0 0 0 3px var(--red-dim);
+        }
+
+        .auth-field-error {
+            color: var(--red);
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 6px;
+            display: none;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .auth-field-error.show {
+            display: flex;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--green);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 20px var(--green-glow);
+        }
+
+        .auth-btn:hover {
+            background: #1db954;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(37, 211, 102, 0.4);
+        }
+
+        .auth-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .auth-global-error {
+            background: var(--red-dim);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 10px;
+            padding: 11px 14px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .auth-global-error.show {
+            display: flex;
+        }
+
+        /* ── Right Panel Tabs ────────────────────────────────────────────────── */
+        .right-panel-tabs {
+            display: flex;
+            gap: 6px;
+            background: var(--bg-surface);
+            padding: 5px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        .right-panel-tab {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.84rem;
+            cursor: pointer;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: inherit;
+            text-align: center;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .right-panel-tab.active {
+            background: var(--green-dim);
+            color: var(--green);
+            border-color: rgba(37,211,102,0.25);
+        }
+        .right-panel-tab:not(.active):hover {
+            background: rgba(255,255,255,0.04);
+            color: var(--text-secondary);
+        }
+        .right-panel-view { display: none; }
+        .right-panel-view.active { display: block; animation: fadeIn 0.25s ease; }
+
+        /* ── Send History Panel ──────────────────────────────────────────────── */
+        .history-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .history-stats {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .history-stat {
+            flex: 1;
+            background: var(--bg-surface);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            padding: 12px 14px;
+            text-align: center;
+        }
+        .history-stat .stat-val {
+            font-size: 1.5rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+        .history-stat .stat-lbl {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-top: 4px;
+        }
+        .history-stat.s-total .stat-val  { color: var(--blue); }
+        .history-stat.s-ok    .stat-val  { color: var(--green); }
+        .history-stat.s-fail  .stat-val  { color: var(--red); }
+
+        .history-table-wrap {
+            overflow-y: auto;
+            max-height: 420px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+        .history-table thead th {
+            position: sticky;
+            top: 0;
+            background: var(--bg-surface);
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            z-index: 1;
+        }
+        .history-table tbody tr {
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background 0.15s ease;
+        }
+        .history-table tbody tr:last-child { border-bottom: none; }
+        .history-table tbody tr:hover { background: var(--bg-hover); }
+        .history-table td {
+            padding: 10px 12px;
+            color: var(--text-secondary);
+            vertical-align: middle;
+        }
+        .history-table td.td-name { color: var(--text-primary); font-weight: 600; }
+        .history-table td.td-phone { color: var(--text-muted); font-family: monospace; font-size: 0.78rem; }
+        .badge-ok {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: var(--green-dim); color: var(--green);
+            border: 1px solid rgba(37,211,102,0.2);
+            border-radius: 20px; padding: 3px 9px;
+            font-size: 0.74rem; font-weight: 700;
+        }
+        .badge-fail {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: var(--red-dim); color: #f87171;
+            border: 1px solid rgba(239,68,68,0.2);
+            border-radius: 20px; padding: 3px 9px;
+            font-size: 0.74rem; font-weight: 700;
+        }
+        .history-empty {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--text-muted);
+        }
+        .history-empty i { font-size: 2.5rem; margin-bottom: 12px; display: block; }
+        .history-empty p { font-size: 0.9rem; font-weight: 500; }
+        .history-load-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(59,130,246,0.08);
+            border: 1px solid rgba(59,130,246,0.2);
+            border-radius: 9px;
+            color: var(--blue);
+            font-size: 0.83rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .history-load-btn:hover { background: rgba(59,130,246,0.15); }
+        .history-load-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    </style>
+</head>
+
+<body>
+
+    <!-- ── Auth Overlay ──────────────────────────────────────────────────── -->
+    <div id="authOverlay">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <i class="fab fa-whatsapp"></i>
+                <h1>WhatsApp Bulk Sender</h1>
+                <p>Sign in to access your campaign dashboard</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Login</button>
+                <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">Create Account</button>
+            </div>
+
+            <!-- Login Form -->
+            <div class="auth-form active" id="loginForm">
+                <div class="auth-global-error" id="loginError">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="loginErrorMsg"></span>
+                </div>
+                <div class="auth-field">
+                    <label><i class="fas fa-user"></i> Username</label>
+                    <input type="text" id="loginUsername" placeholder="Enter your username" autocomplete="username">
+                </div>
+                <div class="auth-field">
+                    <label><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password"
+                        autocomplete="current-password">
+                </div>
+                <button class="auth-btn" id="loginBtn" onclick="doLogin()">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+            </div>
+
+            <!-- Register Form -->
+            <div class="auth-form" id="registerForm">
+                <div class="auth-global-error" id="registerError">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="registerErrorMsg"></span>
+                </div>
+                <div class="auth-field">
+                    <label><i class="fas fa-user"></i> Username</label>
+                    <input type="text" id="regUsername" placeholder="e.g. john_doe or john123" autocomplete="username"
+                        oninput="clearFieldError('regUsernameError', this)">
+                    <div class="auth-field-error" id="regUsernameError">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span></span>
+                    </div>
+                    <small style="color:#888;font-size:0.8rem;margin-top:4px;display:block">Letters, numbers, _ and -
+                        only. No spaces.</small>
+                </div>
+                <div class="auth-field">
+                    <label><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="regPassword" placeholder="At least 6 characters"
+                        autocomplete="new-password" oninput="clearFieldError('regPasswordError', this)">
+                    <div class="auth-field-error" id="regPasswordError">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="auth-field">
+                    <label><i class="fas fa-lock"></i> Confirm Password</label>
+                    <input type="password" id="regConfirmPassword" placeholder="Repeat your password"
+                        autocomplete="new-password" oninput="clearFieldError('regConfirmError', this)">
+                    <div class="auth-field-error" id="regConfirmError">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span></span>
+                    </div>
+                </div>
+                <button class="auth-btn" id="registerBtn" onclick="doRegister()">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Main App ──────────────────────────────────────────────────────── -->
+    <div class="container" id="mainApp" style="display:none">
+        <div class="header-bar">
+            <div style="min-width:120px"></div>
+            <div class="header-info">
+                <h1><i class="fab fa-whatsapp"></i> WhatsApp Bulk Sender Pro</h1>
+                <p>Send personalized messages to multiple contacts with ease</p>
+            </div>
+            <div class="user-badge">
+                <span id="headerUsername"><i class="fas fa-user-circle"></i> </span>
+                <button class="logout-btn" onclick="doLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <!-- Left Side - Campaign Creator -->
+            <div class="card">
+                <div class="step-indicator">
+                    <button class="step active" data-step="1">
+                        <i class="fas fa-paper-plane"></i> 1. Create Campaign
+                    </button>
+                    <button class="step" data-step="2">
+                        <i class="fas fa-qrcode"></i> 2. Initialize & Login
+                    </button>
+                    <button class="step" data-step="3">
+                        <i class="fas fa-paper-plane"></i> 3. Send Messages
+                    </button>
+                </div>
+
+                <!-- Step 1: Create Campaign -->
+                <div class="step-content active" id="step1">
+                    <h2><i class="fas fa-paper-plane"></i> Create Campaign</h2>
+
+                    <!-- Contacts -->
+                    <div class="form-group">
+                        <label><i class="fas fa-users"></i> Contacts</label>
+                        <div class="upload-area" onclick="document.getElementById('excelFile').click()">
+                            <i class="fas fa-file-excel"></i>
+                            <p><strong>Upload Excel</strong><br>Click here or drag and drop<br>.xlsx or .xls</p>
+                            <input type="file" id="excelFile" accept=".xlsx,.xls" onchange="handleExcelUpload(event)">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Or enter manually (one per line):</label>
+                        <textarea id="manualContacts" placeholder="923001234567, John Doe&#10;923009876543"></textarea>
+                        <div id="contactsError" class="form-error">
+                            <i class="fas fa-exclamation-circle"></i> Please add at least one contact (either via Excel
+                            or manual input)!
+                        </div>
+                    </div>
+
+                    <div id="contactList" class="contact-list"></div>
+
+                    <div class="excel-template">
+                        <h3><i class="fas fa-info-circle"></i> Excel Template Format</h3>
+                        <table class="excel-table">
+                            <thead>
+                                <tr>
+                                    <th>Name (Optional)</th>
+                                    <th>Phone (Required)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>John Doe</td>
+                                    <td>919999999999</td>
+                                </tr>
+                                <tr>
+                                    <td>Jane Smith</td>
+                                    <td>918888888888</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>917777777777</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="excel-tips">
+                            <p><strong>Tips to avoid scientific notation in Excel:</strong></p>
+                            <p>1. Format the phone column as <strong>Text</strong> before entering numbers</p>
+                            <p>2. Or start the number with an apostrophe: <code>'919999999999</code></p>
+                            <p>3. Use {name} in your message to personalize with the contact's name!</p>
+                        </div>
+                    </div>
+
+                    <!-- Media Upload -->
+                    <div class="form-group" style="margin-top: 25px;">
+                        <label><i class="fas fa-image"></i> Media (Image/Video/Audio - Optional)</label>
+
+                        <!-- Same / Different toggle -->
+                        <div class="media-mode-row">
+                            <div class="mode-info">
+                                <span><i class="fas fa-images"></i> Same media for all variants</span>
+                                <small>Turn OFF to set a different image per variant</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="sameMediaToggle" checked onchange="toggleMediaMode()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <!-- Global media (shown when toggle is ON / same mode) -->
+                        <div id="globalMediaSection">
+                            <div class="upload-area" onclick="document.getElementById('mediaFile').click()">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p><strong>Upload Media</strong><br>Click here to upload<br>JPG, PNG, MP4, MP3, etc.</p>
+                                <input type="file" id="mediaFile" accept="image/*,video/*,audio/*"
+                                    onchange="handleMediaUpload(event)">
+                            </div>
+                            <div id="mediaPreview"></div>
+                        </div>
+                    </div>
+
+                    <!-- Message Spinner -->
+                    <div class="form-group">
+                        <div class="spinner-label-row">
+                            <label style="margin-bottom:0"><i class="fas fa-comment"></i> Message</label>
+                            <span class="spinner-badge"><i class="fas fa-random"></i> &nbsp;Spinner</span>
+                        </div>
+
+                        <div class="variant-tabs">
+                            <button class="variant-tab active filled" id="vTab1" onclick="switchVariant(1)">Variant 1 <span class="dot"></span></button>
+                            <button class="variant-tab" id="vTab2" onclick="switchVariant(2)">Variant 2 <span class="dot"></span></button>
+                            <button class="variant-tab" id="vTab3" onclick="switchVariant(3)">Variant 3 <span class="dot"></span></button>
+                        </div>
+
+                        <div class="variant-panel active" id="vPanel1">
+                            <textarea id="messageInput" placeholder="Hello {name}! Check out our latest offer 🎉" oninput="syncVariantDot(1); updateAllPreviews();"></textarea>
+                            <div class="variant-media-zone" id="vMediaZone1">
+                                <div class="variant-media-upload" onclick="document.getElementById('vMediaFile1').click()">
+                                    <i class="fas fa-image"></i>
+                                    <span>Add image/video for Variant 1</span>
+                                    <input type="file" id="vMediaFile1" accept="image/*,video/*,audio/*" onchange="handleVariantMedia(1,event)" style="display:none">
+                                </div>
+                                <div id="vMediaThumb1"></div>
+                            </div>
+                        </div>
+                        <div class="variant-panel" id="vPanel2">
+                            <textarea id="messageInput2" placeholder="Hi {name}! Don't miss our new post 🔥" oninput="syncVariantDot(2); updateAllPreviews();"></textarea>
+                            <div class="variant-media-zone" id="vMediaZone2">
+                                <div class="variant-media-upload" onclick="document.getElementById('vMediaFile2').click()">
+                                    <i class="fas fa-image"></i>
+                                    <span>Add image/video for Variant 2</span>
+                                    <input type="file" id="vMediaFile2" accept="image/*,video/*,audio/*" onchange="handleVariantMedia(2,event)" style="display:none">
+                                </div>
+                                <div id="vMediaThumb2"></div>
+                            </div>
+                        </div>
+                        <div class="variant-panel" id="vPanel3">
+                            <textarea id="messageInput3" placeholder="Hey {name}! We have something special for you ✨" oninput="syncVariantDot(3); updateAllPreviews();"></textarea>
+                            <div class="variant-media-zone" id="vMediaZone3">
+                                <div class="variant-media-upload" onclick="document.getElementById('vMediaFile3').click()">
+                                    <i class="fas fa-image"></i>
+                                    <span>Add image/video for Variant 3</span>
+                                    <input type="file" id="vMediaFile3" accept="image/*,video/*,audio/*" onchange="handleVariantMedia(3,event)" style="display:none">
+                                </div>
+                                <div id="vMediaThumb3"></div>
+                            </div>
+                        </div>
+
+                        <div id="messageError" class="form-error">
+                            <i class="fas fa-exclamation-circle"></i> Please add at least one message variant or attach media!
+                        </div>
+
+                        <div class="spinner-hint">
+                            <i class="fas fa-info-circle"></i>
+                            <span>
+                                Each recipient will receive a <strong>random variant</strong> — avoids duplicate detection.<br>
+                                Use <code style="background:rgba(37,211,102,0.12);color:var(--green);padding:1px 5px;border-radius:4px">{name}</code> in any variant to personalize. Only Variant 1 is required; 2 &amp; 3 are optional.
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Interval Settings -->
+                    <div class="form-group">
+                        <label><i class="fas fa-clock"></i> Message Interval (Seconds)</label>
+                        <div style="display: flex; gap: 20px;">
+                            <div style="flex: 1;">
+                                <label
+                                    style="font-size: 0.9rem; color: #666; display: block; margin-bottom: 5px;">Minimum</label>
+                                <input type="number" id="minInterval" value="1" min="1" max="300"
+                                    style="width: 100%; color: #666; padding: 12px 16px; border: 3px solid #e2e8f0; border-radius: 12px; font-size: 1rem; background: linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%);">
+                            </div>
+                            <div style="flex: 1;">
+                                <label
+                                    style="font-size: 0.9rem; color: #666; display: block; margin-bottom: 5px;">Maximum</label>
+                                <input type="number" id="maxInterval" value="3" min="1" max="300"
+                                    style="width: 100%; color: #666; padding: 12px 16px; border: 3px solid #e2e8f0; border-radius: 12px; font-size: 1rem; background: linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%);">
+                            </div>
+                        </div>
+                        <p style="font-size: 0.85rem; color: #666; margin-top: 8px;">
+                            <i class="fas fa-info-circle"></i> Random delay between min and max seconds between messages
+                        </p>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="goToStep(2)">
+                            <i class="fas fa-arrow-right"></i> Next: Initialize WhatsApp
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Initialize -->
+                <div class="step-content" id="step2">
+                    <h2><i class="fas fa-qrcode"></i> Initialize WhatsApp</h2>
+
+                    <div id="statusContainer"></div>
+
+                    <div id="qrContainer" class="qr-container" style="display: none;"></div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" id="initializeBtn" onclick="initializeClient()">
+                            <i class="fas fa-redo"></i> Retry / Re-initialize
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearSession()">
+                            <i class="fas fa-redo"></i> Clear Session
+                        </button>
+                        <button class="btn btn-danger" onclick="goToStep(1)">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Send -->
+                <div class="step-content" id="step3">
+                    <h2><i class="fas fa-paper-plane"></i> Send Messages</h2>
+
+                    <div id="sendStatusContainer"></div>
+
+                    <div class="logs-container" id="logsContainer">
+                        <div class="log-item log-info">Ready to send messages...</div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" id="sendBtn" onclick="sendMessages()">
+                            <i class="fas fa-paper-plane"></i> Start Sending Messages
+                        </button>
+                        <button class="btn btn-danger" onclick="resetCampaign()">
+                            <i class="fas fa-arrow-left"></i> Back to Campaign
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side - Live Preview + Send History -->
+            <div class="card">
+                <!-- Right panel tab switcher -->
+                <div class="right-panel-tabs">
+                    <button class="right-panel-tab active" id="rpTabPreview" onclick="switchRightPanel('preview')">
+                        <i class="fas fa-mobile-alt"></i> Live Preview
+                    </button>
+                    <button class="right-panel-tab" id="rpTabHistory" onclick="switchRightPanel('history')">
+                        <i class="fas fa-history"></i> Send History
+                    </button>
+                </div>
+
+                <!-- VIEW: Live Preview -->
+                <div class="right-panel-view active" id="rpViewPreview">
+                    <div class="preview-stack">
+
+                        <!-- Variant 1 -->
+                        <div class="preview-variant-item">
+                            <div class="preview-variant-label-bar" style="color:var(--green)">
+                                <i class="fas fa-circle" style="font-size:0.5rem"></i> Variant 1
+                            </div>
+                            <div class="preview-container">
+                                <div class="preview-header">
+                                    <div class="preview-avatar">J</div>
+                                    <div class="preview-user-info"><h3>John Doe</h3><p>online</p></div>
+                                </div>
+                                <div class="preview-body" id="previewContent1">
+                                    <div class="preview-content">
+                                        <div class="preview-text">Your message preview will appear here...</div>
+                                        <div class="preview-footer">12:00 PM <i class="fas fa-check-double"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Variant 2 -->
+                        <div class="preview-variant-item">
+                            <div class="preview-variant-label-bar" style="color:#60a5fa">
+                                <i class="fas fa-circle" style="font-size:0.5rem"></i> Variant 2
+                                <span style="color:var(--text-muted);font-weight:400;text-transform:none;font-size:0.72rem;margin-left:4px">(optional)</span>
+                            </div>
+                            <div class="preview-container">
+                                <div class="preview-header">
+                                    <div class="preview-avatar">J</div>
+                                    <div class="preview-user-info"><h3>John Doe</h3><p>online</p></div>
+                                </div>
+                                <div class="preview-body" id="previewContent2">
+                                    <div class="preview-content">
+                                        <div class="preview-text" style="color:#aaa;font-style:italic">Add Variant 2 message to preview...</div>
+                                        <div class="preview-footer">12:00 PM <i class="fas fa-check-double"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Variant 3 -->
+                        <div class="preview-variant-item">
+                            <div class="preview-variant-label-bar" style="color:#c084fc">
+                                <i class="fas fa-circle" style="font-size:0.5rem"></i> Variant 3
+                                <span style="color:var(--text-muted);font-weight:400;text-transform:none;font-size:0.72rem;margin-left:4px">(optional)</span>
+                            </div>
+                            <div class="preview-container">
+                                <div class="preview-header">
+                                    <div class="preview-avatar">J</div>
+                                    <div class="preview-user-info"><h3>John Doe</h3><p>online</p></div>
+                                </div>
+                                <div class="preview-body" id="previewContent3">
+                                    <div class="preview-content">
+                                        <div class="preview-text" style="color:#aaa;font-style:italic">Add Variant 3 message to preview...</div>
+                                        <div class="preview-footer">12:00 PM <i class="fas fa-check-double"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- VIEW: Send History -->
+                <div class="right-panel-view" id="rpViewHistory">
+                    <div class="history-header">
+                        <h2 style="margin-bottom:0;font-size:1rem"><i class="fas fa-history"></i> Send History</h2>
+                        <button class="btn btn-danger" style="padding:7px 14px;font-size:0.8rem" onclick="clearSendHistory()" id="clearHistoryBtn">
+                            <i class="fas fa-trash"></i> Clear All
+                        </button>
+                    </div>
+
+                    <!-- Stats row -->
+                    <div class="history-stats">
+                        <div class="history-stat s-total">
+                            <div class="stat-val" id="histStatTotal">—</div>
+                            <div class="stat-lbl">Total</div>
+                        </div>
+                        <div class="history-stat s-ok">
+                            <div class="stat-val" id="histStatOk">—</div>
+                            <div class="stat-lbl">Delivered</div>
+                        </div>
+                        <div class="history-stat s-fail">
+                            <div class="stat-val" id="histStatFail">—</div>
+                            <div class="stat-lbl">Failed</div>
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="history-table-wrap" id="historyTableWrap">
+                        <div class="history-empty" id="historyEmpty">
+                            <i class="fas fa-inbox"></i>
+                            <p>No messages sent yet.<br>Send your first campaign to see history here.</p>
+                        </div>
+                        <table class="history-table" id="historyTable" style="display:none">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Status</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTbody"></tbody>
+                        </table>
+                    </div>
+
+                    <button class="history-load-btn" id="historyLoadMoreBtn" style="display:none" onclick="loadMoreHistory()">
+                        <i class="fas fa-chevron-down"></i> Load More
+                    </button>
+
+                    <button class="history-load-btn" style="margin-top:10px" onclick="loadSendHistory(1)" id="historyRefreshBtn">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div><!-- /#mainApp -->
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // ── Auth state ──────────────────────────────────────────────────────
+        let currentUser = null;
+
+        // Check login on page load
+        async function checkAuth() {
+            try {
+                const res = await fetch('/api/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    showApp(data.username);
+                } else {
+                    showAuthOverlay();
+                }
+            } catch {
+                showAuthOverlay();
+            }
+        }
+
+        function showApp(username) {
+            currentUser = username;
+            // Reset all WhatsApp state for the new user — prevents bleed-over from a previous session
+            isClientReady = false;
+            hasInitialized = false;
+            contacts = [];
+            mediaData = null;
+            variantMedia = [null, null, null];
+            mediaMode = 'same';
+            document.getElementById('qrContainer').style.display = 'none';
+            document.getElementById('qrContainer').innerHTML = '';
+            document.getElementById('statusContainer').innerHTML = '';
+            document.getElementById('authOverlay').classList.add('hidden');
+            document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('headerUsername').innerHTML = '<i class="fas fa-user-circle"></i> ' + username;
+            goToStep(1);
+            initSocket();
+        }
+
+        function showAuthOverlay() {
+            document.getElementById('authOverlay').classList.remove('hidden');
+            document.getElementById('mainApp').style.display = 'none';
+        }
+
+        // ── Tab switching ───────────────────────────────────────────────────
+        function switchTab(tab) {
+            document.getElementById('loginForm').classList.toggle('active', tab === 'login');
+            document.getElementById('registerForm').classList.toggle('active', tab === 'register');
+            document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+            document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+            // Clear all errors
+            ['loginError', 'registerError'].forEach(id => document.getElementById(id).classList.remove('show'));
+            ['regUsernameError', 'regPasswordError', 'regConfirmError'].forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.remove('show');
+                el.previousElementSibling && el.previousElementSibling.classList.remove('error-input');
+            });
+        }
+
+        function clearFieldError(errorId, input) {
+            const el = document.getElementById(errorId);
+            el.classList.remove('show');
+            input.classList.remove('error-input');
+        }
+
+        function showFieldError(errorId, inputEl, msg) {
+            const el = document.getElementById(errorId);
+            el.querySelector('span').textContent = msg;
+            el.classList.add('show');
+            if (inputEl) inputEl.classList.add('error-input');
+        }
+
+        // ── Login ───────────────────────────────────────────────────────────
+        async function doLogin() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('loginBtn');
+            const errEl = document.getElementById('loginError');
+
+            errEl.classList.remove('show');
+            if (!username || !password) {
+                document.getElementById('loginErrorMsg').textContent = 'Please enter username and password.';
+                errEl.classList.add('show');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showApp(data.username);
+                } else {
+                    document.getElementById('loginErrorMsg').textContent = data.error || 'Login failed';
+                    errEl.classList.add('show');
+                }
+            } catch {
+                document.getElementById('loginErrorMsg').textContent = 'Network error. Try again.';
+                errEl.classList.add('show');
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+        }
+
+        // ── Register ────────────────────────────────────────────────────────
+        async function doRegister() {
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirm = document.getElementById('regConfirmPassword').value;
+            const btn = document.getElementById('registerBtn');
+
+            // Clear previous errors
+            ['regUsernameError', 'regPasswordError', 'regConfirmError'].forEach(id => {
+                document.getElementById(id).classList.remove('show');
+            });
+            document.getElementById('registerError').classList.remove('show');
+
+            let hasError = false;
+
+            if (!username || username.length < 3) {
+                showFieldError('regUsernameError', document.getElementById('regUsername'), 'Username must be at least 3 characters');
+                hasError = true;
+            }
+            if (!password || password.length < 6) {
+                showFieldError('regPasswordError', document.getElementById('regPassword'), 'Password must be at least 6 characters');
+                hasError = true;
+            }
+            if (password !== confirm) {
+                showFieldError('regConfirmError', document.getElementById('regConfirmPassword'), 'Passwords do not match');
+                hasError = true;
+            }
+            if (hasError) return;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
+
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showApp(data.username);
+                } else if (res.status === 409) {
+                    // Username taken — show inline error
+                    showFieldError('regUsernameError', document.getElementById('regUsername'), data.error || 'This username is already taken');
+                } else {
+                    document.getElementById('registerErrorMsg').textContent = data.error || 'Registration failed';
+                    document.getElementById('registerError').classList.add('show');
+                }
+            } catch {
+                document.getElementById('registerErrorMsg').textContent = 'Network error. Try again.';
+                document.getElementById('registerError').classList.add('show');
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+        }
+
+        // ── Logout ──────────────────────────────────────────────────────────
+        async function doLogout() {
+            await fetch('/api/logout', { method: 'POST' });
+            if (socket) { socket.disconnect(); socket = null; }
+            // Reset all state so the next user starts completely clean
+            currentUser = null;
+            isClientReady = false;
+            hasInitialized = false;
+            contacts = [];
+            mediaData = null;
+            showAuthOverlay();
+        }
+
+        // Allow Enter key to submit forms
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const loginActive = document.getElementById('loginForm').classList.contains('active');
+                const authVisible = !document.getElementById('authOverlay').classList.contains('hidden');
+                if (authVisible) {
+                    loginActive ? doLogin() : doRegister();
+                }
+            }
+        });
+
+        // ── Socket init (called after login) ────────────────────────────────
+        let socket = null;
+        let contacts = [];
+        let mediaData = null;
+        let variantMedia = [null, null, null]; // per-variant media for 'different' mode
+        let mediaMode = 'same';               // 'same' | 'different'
+        let isClientReady = false;
+        let hasInitialized = false;
+
+        function initSocket() {
+            socket = io();
+            setupSocketListeners();
+            // Check if this user has a saved WhatsApp session:
+            // - Returning user (has session) → pre-warm so QR/ready is instant on Step 2
+            // - Brand new user (no session)  → do NOT pre-warm; they must go to Step 2 first
+            fetch('/api/has-session')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.hasSession && !isClientReady) {
+                        // Returning user — restore session in background
+                        setTimeout(() => socket.emit('initialize-client'), 600);
+                    }
+                    // New user: do nothing, QR will be triggered when they reach Step 2
+                })
+                .catch(() => { }); // silently ignore if fails
+        }
+
+        // Step navigation
+        function goToStep(step) {
+            // Hide errors first
+            document.getElementById('contactsError').classList.remove('show');
+            document.getElementById('messageError').classList.remove('show');
+
+            // If trying to go to step 2, validate first!
+            if (step === 2) {
+                let hasError = false;
+
+                // Check for contacts!
+                const manualText = document.getElementById('manualContacts').value;
+                const manualLines = manualText.split('\n').filter(line => line.trim());
+                const totalContacts = contacts.length + manualLines.length;
+
+                if (totalContacts === 0) {
+                    document.getElementById('contactsError').classList.add('show');
+                    hasError = true;
+                }
+
+                // Check for message or media! (at least one variant or media must have content)
+                const message = document.getElementById('messageInput').value;
+                const message2 = document.getElementById('messageInput2').value;
+                const message3 = document.getElementById('messageInput3').value;
+                const hasAnyMessage = message.trim() || message2.trim() || message3.trim();
+                const hasAnyMedia = mediaData || variantMedia.some(m => m !== null);
+                if (!hasAnyMessage && !hasAnyMedia) {
+                    document.getElementById('messageError').classList.add('show');
+                    hasError = true;
+                }
+
+                if (hasError) {
+                    return;
+                }
+            }
+
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.step-content').forEach(c => c.classList.remove('active'));
+
+            document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
+            document.getElementById(`step${step}`).classList.add('active');
+
+            if (step === 2) {
+                hasInitialized = true;
+                if (isClientReady) {
+                    // Already connected — show success, hide QR
+                    document.getElementById('qrContainer').style.display = 'none';
+                    updateStatus('success', '✅ WhatsApp is ready! Click "Next: Send Messages" to continue.');
+                    document.getElementById('initializeBtn').disabled = false;
+                } else {
+                    // Show whatever is already in progress (QR or loading)
+                    const qrEl = document.getElementById('qrContainer');
+                    if (qrEl.innerHTML.trim() !== '') {
+                        // QR already generated — make it visible
+                        qrEl.style.display = 'block';
+                        updateStatus('info', '📱 QR code ready! Scan with WhatsApp.');
+                    } else {
+                        // New user or no session — trigger init now
+                        updateStatus('info', '🚀 Starting WhatsApp... QR code will appear shortly...');
+                        document.getElementById('initializeBtn').disabled = true;
+                        socket.emit('initialize-client');
+                        setTimeout(() => {
+                            const btn = document.getElementById('initializeBtn');
+                            if (btn) btn.disabled = false;
+                        }, 90000);
+                    }
+                }
+            }
+        }
+
+        // ── Message Spinner helpers ──────────────────────────────────────────
+        function switchVariant(num) {
+            [1, 2, 3].forEach(n => {
+                document.getElementById(`vTab${n}`).classList.toggle('active', n === num);
+                document.getElementById(`vPanel${n}`).classList.toggle('active', n === num);
+            });
+        }
+
+        function syncVariantDot(num) {
+            const val = document.getElementById(num === 1 ? 'messageInput' : `messageInput${num}`).value.trim();
+            document.getElementById(`vTab${num}`).classList.toggle('filled', val.length > 0 || num === 1);
+        }
+
+        function getMessageVariants() {
+            const v1 = document.getElementById('messageInput').value.trim();
+            const v2 = document.getElementById('messageInput2').value.trim();
+            const v3 = document.getElementById('messageInput3').value.trim();
+            return [v1, v2, v3].filter(v => v.length > 0);
+        }
+
+        // ── Media Mode helpers ─────────────────────────────────────────────
+        function toggleMediaMode() {
+            const isSame = document.getElementById('sameMediaToggle').checked;
+            mediaMode = isSame ? 'same' : 'different';
+            document.getElementById('globalMediaSection').style.display = isSame ? 'block' : 'none';
+            [1, 2, 3].forEach(n => {
+                document.getElementById(`vMediaZone${n}`).classList.toggle('visible', !isSame);
+            });
+            if (isSame) {
+                // Clear per-variant data when switching back to same
+                variantMedia = [null, null, null];
+                [1, 2, 3].forEach(n => {
+                    document.getElementById(`vMediaThumb${n}`).innerHTML = '';
+                    document.getElementById(`vMediaFile${n}`).value = '';
+                });
+            } else {
+                // Clear global media when switching to different
+                mediaData = null;
+                updateMediaPreview();
+            }
+            updateAllPreviews();
+        }
+
+        async function handleVariantMedia(num, event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('media', file);
+            try {
+                const res = await fetch('/upload-media', { method: 'POST', body: formData });
+                const result = await res.json();
+                if (result.error) { alert('Error: ' + result.error); return; }
+                variantMedia[num - 1] = result;
+                updateVariantMediaThumb(num);
+                updateAllPreviews();
+            } catch (err) { alert('Upload error: ' + err.message); }
+        }
+
+        function removeVariantMedia(num) {
+            variantMedia[num - 1] = null;
+            document.getElementById(`vMediaFile${num}`).value = '';
+            updateVariantMediaThumb(num);
+            updateAllPreviews();
+        }
+
+        function updateVariantMediaThumb(num) {
+            const container = document.getElementById(`vMediaThumb${num}`);
+            if (!container) return;
+            const media = variantMedia[num - 1];
+            if (!media) { container.innerHTML = ''; return; }
+            let thumbHtml = '';
+            if (media.mimetype.startsWith('image/')) {
+                thumbHtml = `<img src="${media.path}" alt="Preview">`;
+            } else if (media.mimetype.startsWith('video/')) {
+                thumbHtml = `<video><source src="${media.path}" type="${media.mimetype}"></video>`;
+            } else {
+                thumbHtml = `<i class="fas fa-music" style="font-size:1.6rem;color:var(--green)"></i>`;
+            }
+            container.innerHTML = `<div class="variant-media-thumb">
+                ${thumbHtml}
+                <span class="thumb-name">${media.originalname}</span>
+                <button class="thumb-remove" onclick="removeVariantMedia(${num})"><i class="fas fa-trash"></i></button>
+            </div>`;
+        }
+
+        function getEffectiveMedia(variantIdx) {
+            if (mediaMode === 'same') return mediaData;
+            return variantMedia[variantIdx] || null;
+        }
+
+        // ── Live Preview: update all 3 variant previews at once ───────────────
+        function updateAllPreviews() {
+            const msgIds = ['messageInput', 'messageInput2', 'messageInput3'];
+            const containerIds = ['previewContent1', 'previewContent2', 'previewContent3'];
+            const emptyPlaceholders = [
+                'Your message preview will appear here...',
+                'Add Variant 2 message to preview...',
+                'Add Variant 3 message to preview...'
+            ];
+
+            // Resolve preview name
+            let previewName = 'John Doe';
+            const manualLines = document.getElementById('manualContacts').value
+                .split('\n').filter(l => l.trim());
+            if (manualLines.length > 0) {
+                const parts = manualLines[0].split(',');
+                if (parts[1]) previewName = parts[1].trim();
+            } else if (contacts.length > 0 && contacts[0].name) {
+                previewName = contacts[0].name;
+            }
+
+            [0, 1, 2].forEach(i => {
+                const message = document.getElementById(msgIds[i]).value;
+                const media = getEffectiveMedia(i);
+                const container = document.getElementById(containerIds[i]);
+                if (!container) return;
+
+                let html = '';
+                if (media) {
+                    if (media.mimetype.startsWith('image/'))
+                        html += `<img src="${media.path}" class="preview-media" alt="Preview">`;
+                    else if (media.mimetype.startsWith('video/'))
+                        html += `<video class="preview-media" controls><source src="${media.path}" type="${media.mimetype}"></video>`;
+                    else if (media.mimetype.startsWith('audio/'))
+                        html += `<audio class="preview-media" controls><source src="${media.path}" type="${media.mimetype}"></audio>`;
+                }
+                if (message) {
+                    html += `<div class="preview-text">${message.replace(/\{name\}/g, previewName).replace(/\n/g, '<br>')}</div>`;
+                } else if (!media) {
+                    const style = i === 0 ? '' : ' style="color:#aaa;font-style:italic"';
+                    html += `<div class="preview-text"${style}>${emptyPlaceholders[i]}</div>`;
+                }
+                html += `<div class="preview-footer">12:00 PM <i class="fas fa-check-double"></i></div>`;
+                container.innerHTML = `<div class="preview-content">${html}</div>`;
+            });
+        }
+
+        // Backward-compat alias
+        function updatePreview() { updateAllPreviews(); }
+
+        // Handle Excel upload
+        async function handleExcelUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('excel', file);
+
+            try {
+                const response = await fetch('/upload-excel', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (result.error) {
+                    alert('Error: ' + result.error);
+                    return;
+                }
+
+                contacts = result.contacts;
+                updateContactList();
+            } catch (error) {
+                alert('Error uploading file: ' + error.message);
+            }
+        }
+
+        // Handle media upload
+        async function handleMediaUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('media', file);
+
+            try {
+                const response = await fetch('/upload-media', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (result.error) {
+                    alert('Error: ' + result.error);
+                    return;
+                }
+
+                mediaData = result;
+                updateMediaPreview();
+                updateAllPreviews();
+            } catch (error) {
+                alert('Error uploading file: ' + error.message);
+            }
+        }
+
+        // Update media preview
+        function updateMediaPreview() {
+            const container = document.getElementById('mediaPreview');
+            if (!mediaData) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let previewHtml = '';
+            if (mediaData.mimetype.startsWith('image/')) {
+                previewHtml = `<img src="${mediaData.path}" alt="Preview">`;
+            } else if (mediaData.mimetype.startsWith('video/')) {
+                previewHtml = `<video controls><source src="${mediaData.path}" type="${mediaData.mimetype}"></video>`;
+            } else if (mediaData.mimetype.startsWith('audio/')) {
+                previewHtml = `<audio controls><source src="${mediaData.path}" type="${mediaData.mimetype}"></audio>`;
+            }
+
+            container.innerHTML = `
+                <div class="media-preview">
+                    <div style="flex: 1;">
+                        ${previewHtml}
+                        <p style="margin-top: 8px; color: #333; font-weight: 600;">${mediaData.originalname}</p>
+                    </div>
+                    <button class="media-remove" onclick="removeMedia()">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+            `;
+        }
+
+        // Remove media
+        function removeMedia() {
+            mediaData = null;
+            document.getElementById('mediaFile').value = '';
+            updateMediaPreview();
+            updateAllPreviews();
+        }
+
+        // Update contact list
+        function updateContactList() {
+            const container = document.getElementById('contactList');
+            if (contacts.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = `<div style="font-weight: 700; margin-bottom: 10px; color: #075e54;">
+                <i class="fas fa-check-circle"></i> ${contacts.length} contact(s) added
+            </div>` + contacts.map((contact, index) => `
+                <div class="contact-item">
+                    <div class="contact-info">
+                        <div class="contact-name">${contact.name || 'Unnamed'}</div>
+                        <div class="contact-phone">${contact.phone}</div>
+                    </div>
+                    <button class="contact-remove" onclick="removeContact(${index})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Remove contact
+        function removeContact(index) {
+            contacts.splice(index, 1);
+            updateContactList();
+        }
+
+        // Update status
+        function updateStatus(type, message) {
+            const container = document.getElementById('statusContainer');
+            let icon = 'spinner fa-spin';
+            if (type === 'success') icon = 'check-circle';
+            if (type === 'error') icon = 'exclamation-circle';
+            container.innerHTML = `
+                <div class="status-message status-${type}">
+                    <i class="fas fa-${icon}"></i>
+                    ${message}
+                </div>
+            `;
+        }
+
+        // Retry / Re-initialize (manual button)
+        function initializeClient() {
+            if (isClientReady) {
+                goToStep(3);
+                return;
+            }
+            // Clear any old QR and retry
+            const qrEl = document.getElementById('qrContainer');
+            qrEl.style.display = 'none';
+            qrEl.innerHTML = '';
+            updateStatus('info', '🔄 Retrying WhatsApp connection...');
+            document.getElementById('initializeBtn').disabled = true;
+            socket.emit('initialize-client');
+            setTimeout(() => {
+                const btn = document.getElementById('initializeBtn');
+                if (btn) btn.disabled = false;
+            }, 90000);
+        }
+
+        // Clear session — destroys WhatsApp login and immediately gets fresh QR
+        function clearSession() {
+            isClientReady = false;
+            hasInitialized = false;
+            // Clear QR display
+            const qrEl = document.getElementById('qrContainer');
+            qrEl.style.display = 'none';
+            qrEl.innerHTML = '';
+            updateStatus('info', '🗑️ Clearing session...');
+            document.getElementById('initializeBtn').disabled = true;
+            socket.emit('clear-session');
+        }
+
+        // Reset campaign — clears all contacts, media, manual input, and logs for a fresh start
+        function resetCampaign() {
+            contacts = [];
+            mediaData = null;
+            variantMedia = [null, null, null];
+            mediaMode = 'same';
+            document.getElementById('manualContacts').value = '';
+            document.getElementById('excelFile').value = '';
+            document.getElementById('mediaFile').value = '';
+            document.getElementById('messageInput').value = '';
+            document.getElementById('messageInput2').value = '';
+            document.getElementById('messageInput3').value = '';
+            // Reset media mode toggle UI
+            const toggle = document.getElementById('sameMediaToggle');
+            if (toggle) toggle.checked = true;
+            document.getElementById('globalMediaSection').style.display = 'block';
+            [1, 2, 3].forEach(n => {
+                document.getElementById(`vMediaZone${n}`).classList.remove('visible');
+                document.getElementById(`vMediaThumb${n}`).innerHTML = '';
+                document.getElementById(`vMediaFile${n}`).value = '';
+                syncVariantDot(n);
+            });
+            updateContactList();
+            updateMediaPreview();
+            updateAllPreviews();
+            document.getElementById('logsContainer').innerHTML =
+                '<div class="log-item log-info"><i class="fas fa-info-circle"></i> Ready to send messages...</div>';
+            goToStep(1);
+        }
+
+        // Send messages
+        function sendMessages() {
+            // Collect manual contacts
+            const manualText = document.getElementById('manualContacts').value;
+            const manualLines = manualText.split('\n').filter(line => line.trim());
+
+            manualLines.forEach(line => {
+                const parts = line.split(',');
+                const phone = parts[0].trim();
+                const name = parts[1] ? parts[1].trim() : '';
+                if (phone) {
+                    contacts.push({ phone, name });
+                }
+            });
+
+            // Deduplicate contacts by phone number to prevent duplicate sends
+            const seenPhones = new Set();
+            const uniqueContacts = contacts.filter(c => {
+                const normalized = c.phone.trim().replace(/\D/g, '');
+                if (seenPhones.has(normalized)) return false;
+                seenPhones.add(normalized);
+                return true;
+            });
+
+            if (uniqueContacts.length === 0) {
+                alert('Please add at least one contact!');
+                return;
+            }
+
+            // Collect message variants from spinner
+            const messageVariants = getMessageVariants();
+            const hasAnyMedia = mediaData || variantMedia.some(m => m !== null);
+            if (messageVariants.length === 0 && !hasAnyMedia) {
+                alert('Please enter at least one message variant or attach media!');
+                return;
+            }
+
+            // Clear manual contacts textarea after collecting — prevents duplicates on next send
+            document.getElementById('manualContacts').value = '';
+            // Update contacts array to only the deduplicated list
+            contacts = uniqueContacts;
+
+            // Get interval settings
+            let minInterval = parseInt(document.getElementById('minInterval').value) || 2;
+            let maxInterval = parseInt(document.getElementById('maxInterval').value) || 5;
+
+            // Ensure min <= max
+            if (minInterval > maxInterval) {
+                [minInterval, maxInterval] = [maxInterval, minInterval];
+            }
+
+            document.getElementById('sendBtn').disabled = true;
+            document.getElementById('initializeBtn').disabled = true;
+            document.getElementById('logsContainer').innerHTML = '';
+            addLog('info', `Starting to send ${uniqueContacts.length} messages...`);
+            if (messageVariants.length > 1) {
+                addLog('info', `🎲 Message Spinner active — ${messageVariants.length} variants will be sent randomly`);
+            }
+            addLog('info', `Interval: ${minInterval}-${maxInterval} seconds between messages`);
+
+            socket.emit('send-messages', {
+                contacts: uniqueContacts,
+                message: messageVariants[0] || '',
+                messageVariants: messageVariants,
+                media: mediaData,
+                variantMediaList: variantMedia,
+                mediaMode: mediaMode,
+                minInterval: minInterval,
+                maxInterval: maxInterval
+            });
+        }
+
+        // Add log
+        function addLog(type, message) {
+            const container = document.getElementById('logsContainer');
+            const item = document.createElement('div');
+            item.className = `log-item log-${type}`;
+            item.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'times-circle' : 'info-circle'}"></i> ${message}`;
+            container.appendChild(item);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Socket event listeners (use module-level `socket` set by initSocket)
+        function setupSocketListeners() {
+            socket.on('loading', (data) => {
+                updateStatus('info', `Loading: ${data.message} (${data.percent}%)`);
+            });
+
+            socket.on('qr', async (qrUrl) => {
+                const container = document.getElementById('qrContainer');
+                container.style.display = 'block';
+                container.innerHTML = `
+                <img src="${qrUrl}" alt="QR Code">
+                <p><i class="fas fa-qrcode"></i> Scan this QR code with WhatsApp</p>
+                <p style="font-size: 0.85rem; color: #666; margin-top: 10px;">
+                    Open WhatsApp on your phone → Settings → Linked Devices → Link a Device
+                </p>
+            `;
+                updateStatus('info', 'QR code generated! Scan with WhatsApp');
+            });
+
+            socket.on('authenticated', () => {
+                updateStatus('info', 'Successfully scanned! Finalizing WhatsApp setup...');
+                document.getElementById('qrContainer').style.display = 'none';
+            });
+
+            socket.on('ready', () => {
+                isClientReady = true;
+                document.getElementById('initializeBtn').disabled = false;
+                document.getElementById('qrContainer').style.display = 'none';
+                // Only auto-jump to step 3 if user is currently ON step 2
+                const step2Active = document.getElementById('step2').classList.contains('active');
+                if (step2Active) {
+                    updateStatus('success', '✅ WhatsApp connected! Redirecting to send messages...');
+                    setTimeout(() => goToStep(3), 1000);
+                } else {
+                    // Still on step 1 — just mark as ready silently
+                    updateStatus('success', '✅ WhatsApp is ready!');
+                }
+            });
+
+            socket.on('auth_failure', (msg) => {
+                updateStatus('error', '⚠️ WhatsApp disconnected. Click "Retry / Re-initialize" to get a new QR code.');
+                document.getElementById('initializeBtn').disabled = false;
+                document.getElementById('qrContainer').style.display = 'none';
+                document.getElementById('qrContainer').innerHTML = '';
+                isClientReady = false;
+            });
+
+            socket.on('error', (msg) => {
+                updateStatus('error', msg);
+                document.getElementById('initializeBtn').disabled = false;
+                hasInitialized = false;
+            });
+
+            socket.on('session-cleared', () => {
+                isClientReady = false;
+                hasInitialized = false;
+                const qrEl = document.getElementById('qrContainer');
+                qrEl.style.display = 'none';
+                qrEl.innerHTML = '';
+                document.getElementById('initializeBtn').disabled = true;
+                updateStatus('info', '✅ Session cleared! Getting new QR code...');
+                // Auto-start fresh — user will see a new QR immediately
+                setTimeout(() => {
+                    socket.emit('initialize-client');
+                }, 1000);
+            });
+
+            socket.on('message-sent', (data) => {
+                if (data.success) {
+                    addLog('success', `Message sent to ${data.name || 'Unnamed'} (${data.number})`);
+                } else {
+                    addLog('error', `Failed to send to ${data.name || 'Unnamed'} (${data.number}): ${data.error}`);
+                }
+            });
+
+            socket.on('all-messages-sent', () => {
+                addLog('success', 'All messages sent successfully!');
+                document.getElementById('sendBtn').disabled = false;
+                document.getElementById('initializeBtn').disabled = false;
+                // Auto-refresh history data in background
+                loadSendHistory(1);
+            });
+
+
+            // Event listeners
+            document.getElementById('messageInput').addEventListener('input', updatePreview);
+            // Variant 1 dot is always filled
+            document.getElementById('vTab1').classList.add('filled');
+
+            // Parse manual contacts on input
+            document.getElementById('manualContacts').addEventListener('input', () => {
+                const text = document.getElementById('manualContacts').value;
+                const lines = text.split('\n').filter(line => line.trim());
+                const tempContacts = [];
+
+                lines.forEach(line => {
+                    const parts = line.split(',');
+                    const phone = parts[0].trim();
+                    const name = parts[1] ? parts[1].trim() : '';
+                    if (phone) {
+                        tempContacts.push({ phone, name });
+                    }
+                });
+
+                // Show temporary count
+                const container = document.getElementById('contactList');
+                if (tempContacts.length > 0 || contacts.length > 0) {
+                    const totalContacts = [...contacts, ...tempContacts];
+                    container.innerHTML = `<div style="font-weight: 700; margin-bottom: 10px; color: #075e54;">
+                    <i class="fas fa-check-circle"></i> ${totalContacts.length} contact(s) added
+                </div>` + contacts.map((contact, index) => `
+                    <div class="contact-item">
+                        <div class="contact-info">
+                            <div class="contact-name">${contact.name || 'Unnamed'}</div>
+                            <div class="contact-phone">${contact.phone}</div>
+                        </div>
+                        <button class="contact-remove" onclick="removeContact(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `).join('') + tempContacts.map((contact, index) => `
+                    <div class="contact-item">
+                        <div class="contact-info">
+                            <div class="contact-name" style="color: #667eea;">${contact.name || 'Unnamed'} (manual)</div>
+                            <div class="contact-phone">${contact.phone}</div>
+                        </div>
+                    </div>
+                `).join('');
+                }
+
+                // Update preview with new manual contact name
+                updateAllPreviews();
+            });
+
+            // Add click listeners to step buttons
+            document.querySelectorAll('.step').forEach(stepBtn => {
+                stepBtn.addEventListener('click', () => {
+                    const step = parseInt(stepBtn.dataset.step);
+                    if (step === 3 && isClientReady) {
+                        goToStep(3);
+                    } else if (step < 3 || (step === 3 && isClientReady)) {
+                        goToStep(step);
+                    }
+                });
+            });
+        } // end setupSocketListeners
+
+        // Initial preview update
+        updateAllPreviews();
+
+        // ─── Right Panel Tab Switching ────────────────────────────────────────
+        function switchRightPanel(panel) {
+            const isPreview = panel === 'preview';
+            document.getElementById('rpTabPreview').classList.toggle('active', isPreview);
+            document.getElementById('rpTabHistory').classList.toggle('active', !isPreview);
+            document.getElementById('rpViewPreview').classList.toggle('active', isPreview);
+            document.getElementById('rpViewHistory').classList.toggle('active', !isPreview);
+            if (!isPreview) loadSendHistory(1);
+        }
+
+        // ─── Send History ─────────────────────────────────────────────────────
+        let historyCurrentPage = 1;
+        let historyTotalPages  = 1;
+        let historyAllLogs     = [];
+
+        async function loadSendHistory(page) {
+            const refreshBtn = document.getElementById('historyRefreshBtn');
+            if (refreshBtn) { refreshBtn.disabled = true; refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...'; }
+
+            try {
+                const res = await fetch(`/api/send-history?page=${page}`);
+                if (!res.ok) throw new Error('Failed');
+                const data = await res.json();
+
+                historyCurrentPage = data.page;
+                historyTotalPages  = data.pages;
+
+                if (page === 1) {
+                    historyAllLogs = data.logs;
+                } else {
+                    historyAllLogs = [...historyAllLogs, ...data.logs];
+                }
+
+                renderHistoryTable();
+            } catch (e) {
+                console.error('History load error:', e);
+            } finally {
+                if (refreshBtn) { refreshBtn.disabled = false; refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh'; }
+            }
+        }
+
+        function renderHistoryTable() {
+            const logs = historyAllLogs;
+            const empty  = document.getElementById('historyEmpty');
+            const table  = document.getElementById('historyTable');
+            const tbody  = document.getElementById('historyTbody');
+            const loadMoreBtn = document.getElementById('historyLoadMoreBtn');
+
+            // Stats
+            const total   = logs.length;
+            const ok      = logs.filter(l => l.status === 'success').length;
+            const failed  = total - ok;
+            document.getElementById('histStatTotal').textContent = total;
+            document.getElementById('histStatOk').textContent   = ok;
+            document.getElementById('histStatFail').textContent  = failed;
+
+            if (total === 0) {
+                empty.style.display  = '';
+                table.style.display  = 'none';
+                if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+                return;
+            }
+
+            empty.style.display = 'none';
+            table.style.display = '';
+
+            tbody.innerHTML = logs.map(log => {
+                const name  = log.recipientName  || '<span style="color:var(--text-muted);font-style:italic">—</span>';
+                const phone = log.recipientPhone || '—';
+                const badge = log.status === 'success'
+                    ? '<span class="badge-ok"><i class="fas fa-check"></i> Sent</span>'
+                    : '<span class="badge-fail"><i class="fas fa-times"></i> Failed</span>';
+                const time  = new Date(log.sentAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+                return `<tr>
+                    <td class="td-name">${name}</td>
+                    <td class="td-phone">${phone}</td>
+                    <td>${badge}</td>
+                    <td style="white-space:nowrap;color:var(--text-muted);font-size:0.78rem">${time}</td>
+                </tr>`;
+            }).join('');
+
+            // Load more button
+            if (loadMoreBtn) {
+                if (historyCurrentPage < historyTotalPages) {
+                    loadMoreBtn.style.display = 'flex';
+                } else {
+                    loadMoreBtn.style.display = 'none';
+                }
+            }
+        }
+
+        function loadMoreHistory() {
+            if (historyCurrentPage < historyTotalPages) {
+                loadSendHistory(historyCurrentPage + 1);
+            }
+        }
+
+        async function clearSendHistory() {
+            if (!confirm('Clear all send history? This cannot be undone.')) return;
+            const btn = document.getElementById('clearHistoryBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            try {
+                const res = await fetch('/api/send-history', { method: 'DELETE' });
+                if (res.ok) {
+                    historyAllLogs = [];
+                    renderHistoryTable();
+                }
+            } catch (e) {
+                console.error('Clear history error:', e);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-trash"></i> Clear All';
+            }
+        }
+
+        // ── Start: check if already logged in
+        checkAuth();
+    </script>
+</body>
+
+</html>
