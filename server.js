@@ -279,11 +279,11 @@ mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
             },
             async deleteMany(filter) {
                 const logs = readLocalFile(LOCAL_LOGS_FILE);
-                const kept = logs.filter(l => l.username !== filter.username);
-                writeLocalFile(LOCAL_LOGS_FILE, kept);
-                return { deletedCount: logs.length - kept.length };
+                const keptLogs = logs.filter(log => log.username !== filter.username);
+                writeLocalFile(LOCAL_LOGS_FILE, keptLogs);
+                return { deletedCount: logs.length - keptLogs.length };
             }
-        };
+        }
 
         await migrateUsersJsonLocal();
 
@@ -357,16 +357,16 @@ function getUserData(username) {
 
 // Kill leftover Chrome/Chromium processes (Windows-only)
 function killLeftoverChromeProcesses() {
-  if (process.platform === 'win32') {
-    try {
-      const { execSync } = require('child_process');
-      // Kill all Chrome processes that might be leftover (use with caution!)
-      execSync('taskkill /F /IM chrome.exe /T 2>nul', { stdio: 'ignore' });
-      console.log('Killed leftover Chrome processes');
-    } catch (err) {
-      // Ignore errors (no Chrome processes found)
+    if (process.platform === 'win32') {
+        try {
+            const { execSync } = require('child_process');
+            // Kill all Chrome processes that might be leftover (use with caution!)
+            execSync('taskkill /F /IM chrome.exe /T 2>nul', { stdio: 'ignore' });
+            console.log('Killed leftover Chrome processes');
+        } catch (err) {
+            // Ignore errors (no Chrome processes found)
+        }
     }
-  }
 }
 
 // ─── Clean stale Chrome lock files recursively ───────────────────────────────
@@ -545,7 +545,7 @@ function requireAuth(req, res, next) {
 
 // ─── Health check route ───────────────────────────────────────────────────────
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Server is running' });
+    res.status(200).json({ status: 'ok', message: 'Server is running' });
 });
 
 // ─── Auth API routes ──────────────────────────────────────────────────────────
