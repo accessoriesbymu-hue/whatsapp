@@ -231,81 +231,140 @@ mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
         console.warn('❌ MongoDB connection error:', err.message);
         console.warn('⚠️  Could not connect to MongoDB Atlas. Falling back to local file-based database.');
 
-        // Override models with file-based mock databases
-        User = {
-            async findOne({ username }) {
-                const users = readLocalFile(LOCAL_USERS_FILE);
-                return users.find(u => u.username === username) || null;
-            },
-            async create(userData) {
-                const users = readLocalFile(LOCAL_USERS_FILE);
-                const newUser = {
-                    createdAt: new Date(),
-                    ...userData
-                };
-                users.push(newUser);
-                writeLocalFile(LOCAL_USERS_FILE, users);
-                return newUser;
-            },
-            find(query, projection) {
-                return {
-                    lean: async () => {
+        try {
+            // Override models with file-based mock databases
+            User = {
+                async findOne({ username }) {
+                    try {
                         const users = readLocalFile(LOCAL_USERS_FILE);
-                        return users.map(u => ({ username: u.username }));
+                        return users.find(u => u.username === username) || null;
+                    } catch (e) {
+                        console.error('User.findOne error:', e.message);
+                        return null;
                     }
-                };
-            }
-        };
+                },
+                async create(userData) {
+                    try {
+                        const users = readLocalFile(LOCAL_USERS_FILE);
+                        const newUser = {
+                            createdAt: new Date(),
+                            ...userData
+                        };
+                        users.push(newUser);
+                        writeLocalFile(LOCAL_USERS_FILE, users);
+                        return newUser;
+                    } catch (e) {
+                        console.error('User.create error:', e.message);
+                        throw e;
+                    }
+                },
+                find(query, projection) {
+                    return {
+                        lean: async () => {
+                            try {
+                                const users = readLocalFile(LOCAL_USERS_FILE);
+                                return users.map(u => ({ username: u.username }));
+                            } catch (e) {
+                                console.error('User.find.lean error:', e.message);
+                                return [];
+                            }
+                        },
+                        then(onResolve, onReject) {
+                            return this.lean().then(onResolve, onReject);
+                        }
+                    };
+                }
+            };
 
-        SendLog = {
-            find(filter) {
-                const logs = readLocalFile(LOCAL_LOGS_FILE);
-                const filtered = logs.filter(l => l.username === filter.username);
-                return new MockQuery(filtered);
-            },
-            async countDocuments(filter) {
-                const logs = readLocalFile(LOCAL_LOGS_FILE);
-                return logs.filter(l => l.username === filter.username).length;
-            },
-            async create(logData) {
-                const logs = readLocalFile(LOCAL_LOGS_FILE);
-                const newLog = {
-                    sentAt: new Date(),
-                    ...logData
-                };
-                logs.push(newLog);
-                writeLocalFile(LOCAL_LOGS_FILE, logs);
-                return newLog;
-            },
-            async deleteMany(filter) {
-                const logs = readLocalFile(LOCAL_LOGS_FILE);
-                const keptLogs = logs.filter(log => log.username !== filter.username);
-                writeLocalFile(LOCAL_LOGS_FILE, keptLogs);
-                return { deletedCount: logs.length - keptLogs.length };
+            SendLog = {
+                find(filter) {
+                    try {
+                        const logs = readLocalFile(LOCAL_LOGS_FILE);
+                        const filtered = logs.filter(l => l.username === filter.username);
+                        return new MockQuery(filtered);
+                    } catch (e) {
+                        console.error('SendLog.find error:', e.message);
+                        return new MockQuery([]);
+                    }
+                },
+                async countDocuments(filter) {
+                    try {
+                        const logs = readLocalFile(LOCAL_LOGS_FILE);
+                        return logs.filter(l => l.username === filter.username).length;
+                    } catch (e) {
+                        console.error('SendLog.countDocuments error:', e.message);
+                        return 0;
+                    }
+                },
+                async create(logData) {
+                    try {
+                        const logs = readLocalFile(LOCAL_LOGS_FILE);
+                        const newLog = {
+                            sentAt: new Date(),
+                            ...logData
+                        };
+                        logs.push(newLog);
+                        writeLocalFile(LOCAL_LOGS_FILE, logs);
+                        return newLog;
+                    } catch (e) {
+                        console.error('SendLog.create error:', e.message);
+                        throw e;
+                    }
+                },
+                async deleteMany(filter) {
+                    try {
+                        const logs = readLocalFile(LOCAL_LOGS_FILE);
+                        const keptLogs = logs.filter(log => log.username !== filter.username);
+                        writeLocalFile(LOCAL_LOGS_FILE, keptLogs);
+                        return { deletedCount: logs.length - keptLogs.length };
+                    } catch (e) {
+                        console.error('SendLog.deleteMany error:', e.message);
+                        return { deletedCount: 0 };
+                    }
+                }
+            };
+
+            await migrateUsersJsonLocal();
+
+            const FileStore = require('session-file-store')(session);
+            // Make sure sessions directory exists
+            const sessionsDir = path.join(__dirname, 'sessions');
+            if (!fs.existsSync(sessionsDir)) {
+                fs.mkdirSync(sessionsDir, { recursive: true });
             }
+            const fileSessionStore = new FileStore({
+                path: sessionsDir,
+                ttl: 7 * 24 * 60 * 60
+            });
+
+            actualSessionMiddleware = session({
+                secret: process.env.SESSION_SECRET || 'wa-bulk-sender-secret-2024-xK9pL',
+                resave: false,
+                saveUninitialized: false,
+                store: fileSessionStore,
+                cookie: {
+                    maxAge: 7 * 24 * 60 * 60 * 1000,
+                    httpOnly: true
+                }
+            });
+
+            console.log('✅ Local file-based database ready');
+
+            // Run auto-init since fallback DB is ready
+            runAutoInit();
+        } catch (fallbackErr) {
+            console.error('❌ Failed to initialize fallback database:', fallbackErr.message);
+            // Even if fallback fails, set a basic session middleware so the server can serve pages
+            actualSessionMiddleware = session({
+                secret: process.env.SESSION_SECRET || 'wa-bulk-sender-secret-2024-xK9pL',
+                resave: false,
+                saveUninitialized: false,
+                cookie: {
+                    maxAge: 24 * 60 * 60 * 1000,
+                    httpOnly: true
+                }
+            });
         }
-
-        await migrateUsersJsonLocal();
-
-        const FileStore = require('session-file-store')(session);
-        const fileSessionStore = new FileStore({
-            path: path.join(__dirname, 'sessions'),
-            ttl: 7 * 24 * 60 * 60
-        });
-
-        actualSessionMiddleware = session({
-            secret: process.env.SESSION_SECRET || 'wa-bulk-sender-secret-2024-xK9pL',
-            resave: false,
-            saveUninitialized: false,
-            store: fileSessionStore,
-            cookie: {
-                maxAge: 7 * 24 * 60 * 60 * 1000,
-                httpOnly: true
-            }
-        });
-
-        // Run auto-init since fallback DB is ready
-        runAutoInit();
     });
 
 app.use(sessionMiddleware);
