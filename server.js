@@ -188,6 +188,20 @@ function deleteDirectory(dirPath) {
 const app = express();
 const server = http.createServer(app);
 
+// --- EARLY ROUTES: NO SESSION MIDDLEWARE NEEDED ---
+// Health check for Railway (must come first!)
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'Server is running' });
+});
+
+// Serve static files from public directory (no session needed)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Root route to serve index.html (no session needed)
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 let actualSessionMiddleware = null;
 const sessionMiddleware = (req, res, next) => {
     if (actualSessionMiddleware) {
@@ -369,11 +383,6 @@ mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
 
 app.use(sessionMiddleware);
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
 
 // ─── Socket.io with session sharing ──────────────────────────────────────────
 const io = new Server(server, {
@@ -606,10 +615,7 @@ function requireAuth(req, res, next) {
     next();
 }
 
-// ─── Health check route ───────────────────────────────────────────────────────
-app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok', message: 'Server is running' });
-});
+
 
 // ─── Auth API routes ──────────────────────────────────────────────────────────
 app.get('/api/me', (req, res) => {
