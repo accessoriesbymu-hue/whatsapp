@@ -355,16 +355,18 @@ function getUserData(username) {
     return userClients.get(username);
 }
 
-// Kill leftover Chrome/Chromium processes (Windows only)
+// Kill leftover Chrome/Chromium processes (Windows-only)
 function killLeftoverChromeProcesses() {
+  if (process.platform === 'win32') {
     try {
-        const { execSync } = require('child_process');
-        // Kill all Chrome processes that might be leftover (use with caution!)
-        execSync('taskkill /F /IM chrome.exe /T 2>nul', { stdio: 'ignore' });
-        console.log('Killed leftover Chrome processes');
+      const { execSync } = require('child_process');
+      // Kill all Chrome processes that might be leftover (use with caution!)
+      execSync('taskkill /F /IM chrome.exe /T 2>nul', { stdio: 'ignore' });
+      console.log('Killed leftover Chrome processes');
     } catch (err) {
-        // Ignore errors (no Chrome processes found)
+      // Ignore errors (no Chrome processes found)
     }
+  }
 }
 
 // ─── Clean stale Chrome lock files recursively ───────────────────────────────
@@ -540,6 +542,11 @@ function requireAuth(req, res, next) {
     if (!req.session.username) return res.status(401).json({ error: 'Not authenticated' });
     next();
 }
+
+// ─── Health check route ───────────────────────────────────────────────────────
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'Server is running' });
+});
 
 // ─── Auth API routes ──────────────────────────────────────────────────────────
 app.get('/api/me', (req, res) => {
@@ -942,8 +949,8 @@ io.on('connection', (socket) => {
 
 // ─── Server start + auto-init saved sessions ──────────────────────────────────
 const PORT = process.env.PORT || 3003;
-server.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
 });
 
 async function runAutoInit() {
