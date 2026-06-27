@@ -1,0 +1,11 @@
+[phases.setup]
+nixpkgsArchive = "f8eac6cda70173e1416e325e5a7a6589ef499220"
+
+[phases.install]
+commands = ["npm install"]
+
+[phases.build]
+commands = []
+
+[phases.start]
+cmd = "npm start"
