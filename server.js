@@ -9,7 +9,7 @@ const fs = require('fs');
 const multer = require('multer');
 const XLSX = require('xlsx');
 const session = require('express-session');
-const { MongoStore } = require('connect-mongo');
+const MongoStore = require('connect-mongo');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 
