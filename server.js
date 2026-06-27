@@ -314,7 +314,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // ─── Socket.io with session sharing ──────────────────────────────────────────
 const io = new Server(server, {
-    cors: { origin: '*', methods: ['GET', 'POST'] }
+    cors: { origin: '*', methods: ['GET', 'POST'] },
+    transports: ['websocket', 'polling']
 });
 
 // Share express-session with socket.io
@@ -432,7 +433,6 @@ async function createClient(username) {
         authStrategy: new LocalAuth({ clientId }),
         puppeteer: {
             headless: true,
-            executablePath: chromePath || undefined,
             args: [
                 '--no-sandbox', '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage', '--disable-gpu',
@@ -443,7 +443,8 @@ async function createClient(username) {
                 '--hide-scrollbars', '--mute-audio',
                 '--window-size=1280,720',
                 '--disable-features=IsolateOrigins,site-per-process',
-                '--disable-site-isolation-trials'
+                '--disable-site-isolation-trials',
+                '--single-process', '--no-zygote'
             ],
             protocolTimeout: 600000,
             timeout: 600000,
