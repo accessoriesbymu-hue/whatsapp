@@ -230,25 +230,49 @@ mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
         migrateUsersJson();
 
         try {
+            // Support multiple connect-mongo exports across versions
+            let storeInstance = null;
+            try {
+                if (MongoStore && typeof MongoStore.create === 'function') {
+                    // modern API
+                    storeInstance = MongoStore.create({ mongoUrl: MONGO_URI, collectionName: 'sessions', ttl: 7 * 24 * 60 * 60 });
+                } else if (MongoStore && MongoStore.default && typeof MongoStore.default.create === 'function') {
+                    storeInstance = MongoStore.default.create({ mongoUrl: MONGO_URI, collectionName: 'sessions', ttl: 7 * 24 * 60 * 60 });
+                } else if (typeof MongoStore === 'function') {
+                    // older API: require('connect-mongo')(session)
+                    try {
+                        storeInstance = new (MongoStore)( { mongooseConnection: mongoose.connection, collection: 'sessions' } );
+                    } catch (e) {
+                        // Some older versions expect options differently
+                        storeInstance = new (MongoStore)( { mongooseConnection: mongoose.connection } );
+                    }
+                }
+            } catch (innerErr) {
+                console.warn('MongoStore detection error:', innerErr && innerErr.message ? innerErr.message : innerErr);
+            }
+
+            if (!storeInstance) throw new Error('Could not create MongoStore instance');
+
             actualSessionMiddleware = session({
                 secret: process.env.SESSION_SECRET || 'wa-bulk-sender-secret-2024-xK9pL',
                 resave: false,
                 saveUninitialized: false,
-                store: MongoStore.create({
-                    mongoUrl: MONGO_URI,
-                    collectionName: 'sessions',
-                    ttl: 7 * 24 * 60 * 60
-                }),
+                store: storeInstance,
                 cookie: {
                     maxAge: 7 * 24 * 60 * 60 * 1000,
                     httpOnly: true
                 }
             });
 
-            // Run auto-init since DB is ready
-            runAutoInit();
+            // Run auto-init since DB is ready (disabled by default on low-memory hosts)
+            if (process.env.AUTO_INIT === 'true') {
+                console.log('AUTO_INIT enabled — attempting to restore sessions on startup');
+                runAutoInit();
+            } else {
+                console.log('AUTO_INIT disabled — sessions will be initialized on-demand');
+            }
         } catch (mongoStoreErr) {
-            console.warn('❌ MongoStore error:', mongoStoreErr.message);
+            console.warn('❌ MongoStore error:', mongoStoreErr && mongoStoreErr.message ? mongoStoreErr.message : mongoStoreErr);
             console.warn('⚠️  Falling back to local file-based database.');
             await setupLocalFileDB();
         }
@@ -379,8 +403,13 @@ async function setupLocalFileDB() {
 
             console.log('✅ Local file-based database ready');
 
-            // Run auto-init since fallback DB is ready
-            runAutoInit();
+            // Run auto-init since fallback DB is ready (disabled unless AUTO_INIT=true)
+            if (process.env.AUTO_INIT === 'true') {
+                console.log('AUTO_INIT enabled — attempting to restore sessions on startup (fallback DB)');
+                runAutoInit();
+            } else {
+                console.log('AUTO_INIT disabled — sessions will be initialized on-demand (fallback DB)');
+            }
         } catch (fallbackErr) {
             console.error('❌ Failed to initialize fallback database:', fallbackErr.message);
             // Even if fallback fails, set a basic session middleware so the server can serve pages
@@ -402,7 +431,8 @@ app.use(express.json());
 // ─── Socket.io with session sharing ──────────────────────────────────────────
 const io = new Server(server, {
     cors: { origin: '*', methods: ['GET', 'POST'] },
-    transports: ['websocket', 'polling']
+    // allow long-polling fallback first to be compatible with proxies
+    transports: ['polling', 'websocket']
 });
 
 // Share express-session with socket.io
@@ -444,15 +474,11 @@ function getUserData(username) {
 
 // Kill leftover Chrome/Chromium processes (Windows-only)
 function killLeftoverChromeProcesses() {
+    // Disabled killing Chrome processes to avoid interfering with user's browser.
+    // Previously this used `taskkill` on Windows which could terminate user Chrome.
+    // Keep a no-op function for compatibility and log a message instead.
     if (process.platform === 'win32') {
-        try {
-            const { execSync } = require('child_process');
-            // Kill all Chrome processes that might be leftover (use with caution!)
-            execSync('taskkill /F /IM chrome.exe /T 2>nul', { stdio: 'ignore' });
-            console.log('Killed leftover Chrome processes');
-        } catch (err) {
-            // Ignore errors (no Chrome processes found)
-        }
+        console.log('Skipping automatic Chrome process killing (disabled to avoid terminating user browser).');
     }
 }
 
@@ -895,6 +921,8 @@ io.on('connection', (socket) => {
 
         if (!ud.client || !ud.isReady) {
             socket.emit('error', 'WhatsApp not ready. Please re-initialize.');
+            // emit summary indicating nothing was sent
+            emitToUser(username, 'all-messages-sent', { total: contacts.length, success: 0, failed: contacts.length });
             return;
         }
 
@@ -905,6 +933,10 @@ io.on('connection', (socket) => {
 
         ud.isSending = true;
         console.log(`[${username}] Starting to send to ${contacts.length} contacts`);
+
+        // Track results to provide accurate summary back to client
+        let successCount = 0;
+        let failedCount = 0;
 
         // Pre-send health check
         try {
@@ -967,6 +999,7 @@ io.on('connection', (socket) => {
                     variantIndex:   variantIdx
                 }).catch(err => console.error(`[${username}] SendLog write error:`, err.message));
 
+                successCount++;
                 socket.emit('message-sent', { number: contact.phone, name: contact.name, success: true });
 
             } catch (error) {
@@ -990,6 +1023,7 @@ io.on('connection', (socket) => {
                     status:         'failed',
                     errorMessage:   error.message || 'Unknown error'
                 }).catch(err => console.error(`[${username}] SendLog write error:`, err.message));
+                failedCount++;
 
                 if (isBrokenClient) {
                     console.log(`[${username}] Browser is dead! Resetting client...`);
@@ -1000,7 +1034,8 @@ io.on('connection', (socket) => {
                         number: contact.phone, name: contact.name, success: false,
                         error: 'WhatsApp session lost. Please re-initialize WhatsApp.'
                     });
-                    emitToUser(username, 'all-messages-sent', null);
+                    // send summary with counts so client can show partial failure
+                    emitToUser(username, 'all-messages-sent', { total: contacts.length, success: successCount, failed: failedCount });
                     emitToUser(username, 'auth_failure', '⚠️ WhatsApp disconnected! Please re-initialize.');
                     return;
                 }
@@ -1061,3 +1096,20 @@ async function runAutoInit() {
         console.error('[AUTO-INIT] Error fetching users:', err.message);
     }
 }
+
+// Global error handlers to avoid sudden process exits (helps with 502 proxy errors)
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err && err.stack ? err.stack : err);
+});
+
+process.on('unhandledRejection', (reason) => {
+    console.error('Unhandled Rejection:', reason);
+});
+
+// Periodic memory usage logger to help debug OOM on hosting providers
+setInterval(() => {
+    try {
+        const mu = process.memoryUsage();
+        console.log(`Memory usage (rss=${Math.round(mu.rss/1024/1024)}MB, heapUsed=${Math.round(mu.heapUsed/1024/1024)}MB, heapTotal=${Math.round(mu.heapTotal/1024/1024)}MB)`);
+    } catch (e) {}
+}, 60 * 1000);
